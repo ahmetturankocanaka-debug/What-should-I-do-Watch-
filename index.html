@@ -1,0 +1,3022 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ne İzlesem?</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* IMDb Benzeri Tema - Açık */
+            --primary-bg: #f3f3f3; /* Açık gri */
+            --secondary-bg: #ffffff; /* Beyaz */
+            --text-color: #1a1a1a; /* Koyu gri */
+            --accent-color: #f5c518; /* IMDb sarısı */
+            --button-text-color: #1a1a1a;
+            --border-color: #e0e0e0;
+            --card-shadow: rgba(0, 0, 0, 0.1);
+            --button-hover-bg: #e5b810; /* Koyu sarı */
+            --watched-color: #28a745; /* Yeşil */
+            --not-watched-color: #6c757d; /* Gri */
+            --link-color: #007bff; /* Mavi */
+            --link-hover-color: #0056b3; /* Koyu mavi */
+            --header-bg: #212121; /* Koyu gri */
+            --header-text-color: #f5c518; /* IMDb sarısı */
+            --control-bg: #ffffff;
+        }
+
+        body.dark-theme {
+            /* IMDb Benzeri Tema - Koyu */
+            --primary-bg: #1a1a1a; /* Koyu arka plan */
+            --secondary-bg: #212121; /* Koyu kartlar */
+            --text-color: #f3f3f3; /* Açık yazı */
+            --accent-color: #f5c518; /* IMDb sarısı */
+            --button-text-color: #1a1a1a;
+            --border-color: #333333;
+            --card-shadow: rgba(0, 0, 0, 0.4);
+            --button-hover-bg: #e5b810;
+            --watched-color: #28a745;
+            --not-watched-color: #adb5bd;
+            --link-color: #66b8ff;
+            --link-hover-color: #4da6ff;
+            --header-bg: #121212;
+            --header-text-color: #f5c518;
+            --control-bg: #212121;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        header {
+            background-color: var(--header-bg);
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+            box-shadow: 0 2px 4px var(--card-shadow);
+            margin-bottom: 20px;
+            border-radius: 8px;
+            color: var(--header-text-color);
+        }
+
+        header h1 {
+            color: var(--header-text-color);
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: var(--text-color);
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            background-color: var(--control-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px var(--card-shadow);
+        }
+
+        .controls button,
+        .controls select {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: var(--accent-color);
+            color: var(--button-text-color);
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            white-space: nowrap;
+            font-weight: 600;
+        }
+
+        .controls button:hover,
+        .controls select:hover {
+            background-color: var(--button-hover-bg);
+        }
+
+        .controls select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            padding-right: 30px;
+            background-image: url('data:image/svg+xml;utf8,<svg fill="%231a1a1a" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>'); /* Dark arrow */
+            background-repeat: no-repeat;
+            background-position: right 8px top 50%;
+            background-size: 20px auto;
+        }
+
+        body.dark-theme .controls select {
+             background-image: url('data:image/svg+xml;utf8,<svg fill="%23e9ecef" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>'); /* Light arrow */
+        }
+
+
+        #theme-switcher {
+            display: flex;
+            gap: 10px;
+        }
+
+        .movie-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 25px;
+        }
+
+        .movie-card {
+            background-color: var(--secondary-bg);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px var(--card-shadow);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--border-color);
+        }
+
+        .movie-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px var(--card-shadow);
+        }
+
+        .movie-card img {
+            width: 100%;
+            height: 350px; /* Fixed height for posters */
+            object-fit: cover;
+            display: block;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .movie-info {
+            padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .movie-info h3 {
+            font-size: 1.4em;
+            margin-bottom: 10px;
+            color: var(--text-color); /* IMDb temasında başlık da normal yazı rengi gibi */
+            min-height: 2.8em; /* Ensure consistent height for titles */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .movie-info p {
+            font-size: 0.9em;
+            margin-bottom: 8px;
+            color: var(--text-color);
+        }
+
+        .movie-info .rating-watched {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .movie-info .rating {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: var(--accent-color); /* IMDb sarısı */
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .movie-info .rating svg {
+            fill: var(--accent-color);
+        }
+
+        .movie-info .watched-status {
+            font-size: 0.9em;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .movie-info .watched-status.watched {
+            background-color: var(--watched-color);
+            color: white;
+        }
+
+        .movie-info .watched-status.not-watched {
+            background-color: var(--not-watched-color);
+            color: white;
+        }
+
+        .movie-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .movie-actions button,
+        .movie-actions a {
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+        }
+
+        .movie-actions button {
+            background-color: var(--accent-color);
+            color: var(--button-text-color);
+            border: 1px solid var(--accent-color);
+        }
+
+        .movie-actions button:hover {
+            background-color: var(--button-hover-bg);
+            border-color: var(--button-hover-bg);
+        }
+
+        .movie-actions .watched-toggle-btn {
+            background-color: var(--not-watched-color);
+            border-color: var(--not-watched-color);
+            color: white;
+        }
+
+        .movie-actions .watched-toggle-btn.watched-btn {
+            background-color: var(--watched-color);
+            border-color: var(--watched-color);
+        }
+
+        .movie-actions .watched-toggle-btn:hover {
+            opacity: 0.9;
+        }
+
+        .movie-actions a {
+            background-color: #343a40; /* Gri arka plan */
+            color: white;
+            border: 1px solid #343a40;
+        }
+
+        .movie-actions a:hover {
+            background-color: #23272b; /* Koyu gri */
+            border-color: #23272b;
+        }
+
+        /* Modal for random suggestion */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.7); /* Black w/ opacity */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: var(--secondary-bg);
+            margin: auto;
+            padding: 30px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            position: relative;
+            text-align: center;
+            animation: fadeIn 0.3s;
+        }
+
+        .modal-content img {
+            max-width: 80%;
+            height: auto;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .modal-content h2 {
+            color: var(--accent-color);
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .modal-content h3 {
+            color: var(--text-color);
+            margin-bottom: 10px;
+        }
+
+        .modal-content p {
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            color: var(--text-color);
+        }
+
+        .modal-content .modal-actions {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap; /* Butonların sığmazsa alt satıra geçmesi için */
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .modal-content .modal-actions a { /* Modal içindeki linkleri hedef al */
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            background-color: var(--accent-color);
+            color: var(--button-text-color);
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            text-decoration: none; /* Alt çizgiyi kaldır */
+        }
+        
+        .modal-content .modal-actions a:hover {
+             background-color: var(--button-hover-bg);
+        }
+
+        .close-button {
+            position: absolute;
+            top: 15px;
+            right: 25px;
+            color: var(--text-color);
+            font-size: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: #ccc;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            #theme-switcher {
+                flex-direction: column;
+                width: 100%;
+            }
+            #theme-switcher button {
+                width: 100%;
+            }
+
+            .movie-list {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+
+            .movie-card img {
+                height: 280px;
+            }
+
+            .movie-info h3 {
+                font-size: 1.2em;
+            }
+
+            .movie-actions button,
+            .movie-actions a {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .container {
+                padding: 0 10px;
+            }
+
+            .movie-card img {
+                height: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Ne İzlesem?</h1>
+            <p>Sıradaki favori dizini bul!</p>
+        </header>
+
+        <div class="controls">
+            <select id="category-filter">
+                <option value="all">Tüm Kategoriler</option>
+                <option value="Dram">Dram</option>
+                <option value="Bilim Kurgu">Bilim Kurgu</option>
+                <option value="Komedi">Komedi</option>
+                <option value="Fantastik">Fantastik</option>
+                <option value="Gerilim">Gerilim</option>
+                <option value="Suç">Suç</option>
+                <option value="Animasyon">Animasyon</option>
+                <option value="Biyografi">Biyografi</option>
+                <option value="Belgesel">Belgesel</option>
+                <option value="Romantik">Romantik</option>
+                <option value="Savaş">Savaş</option>
+                <option value="Gizem">Gizem</option>
+                <option value="Aksiyon">Aksiyon</option>
+                <option value="Korku">Korku</option>
+                <option value="Gençlik">Gençlik</option>
+                <option value="Tarihi">Tarihi</option>
+                <option value="Reality-TV">Reality-TV</option>
+                <option value="Müzikal">Müzikal</option>
+                <option value="Yetişkin Animasyon">Yetişkin Animasyon</option>
+            </select>
+            <button id="random-suggest-btn">Bana Dizi Öner!</button>
+            <div id="theme-switcher">
+                <button id="light-theme-btn">Açık Tema</button>
+                <button id="dark-theme-btn">Koyu Tema</button>
+            </div>
+        </div>
+
+        <div class="movie-list" id="movie-list">
+            </div>
+    </div>
+
+    <div id="suggestionModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Size Özel Dizi Önerisi!</h2>
+            <img id="modal-poster" src="" alt="Dizi Afişi">
+            <h3 id="modal-title"></h3>
+            <p id="modal-genres"></p>
+            <p id="modal-description"></p>
+            <div class="modal-actions">
+                <a id="modal-imdb-link" href="#" target="_blank">IMDb'de İncele</a>
+                <a id="modal-netflix-link" href="#" target="_blank" class="platform-link" style="display:none;">Netflix'te İzle</a>
+                <a id="modal-prime-link" href="#" target="_blank" class="platform-link" style="display:none;">Prime Video'da İzle</a>
+                <a id="modal-disney-link" href="#" target="_blank" class="platform-link" style="display:none;">Disney+'ta İzle</a>
+                <a id="modal-blutv-link" href="#" target="_blank" class="platform-link" style="display:none;">BluTV'de İzle</a>
+                <a id="modal-gain-link" href="#" target="_blank" class="platform-link" style="display:none;">Gain'de İzle</a>
+                <a id="modal-bein-link" href="#" target="_blank" class="platform-link" style="display:none;">beIN CONNECT'te İzle</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const movies = [
+            {
+                id: 1,
+                title: "Taht Oyunları",
+                years: "2011–2019",
+                eps: 74,
+                age: "18+",
+                type: "TV Series",
+                rating: 9.2,
+                votes: "2.4M",
+                watched: false,
+                userRating: null,
+                genres: ["Dram", "Fantastik", "Aksiyon"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/1XS1oqL89opfnbLl8WnZY1O1uJx.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt0944947/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: "https://www.beinconnect.com.tr/dizi/taht-oyunlari"
+                }
+            },
+            {
+                id: 2,
+                title: "Breaking Bad",
+                years: "2008–2013",
+                eps: 62,
+                age: "18+",
+                type: "TV Series",
+                rating: 9.5,
+                votes: "2.3M",
+                watched: false,
+                userRating: null,
+                genres: ["Dram", "Gerilim", "Suç"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/ztkUQFLlC19CCMYHW9o1zWhJRNq.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt0903747/",
+                    netflix: "https://www.netflix.com/title/70117070",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 3,
+                title: "Westworld",
+                years: "2016–2022",
+                eps: 36,
+                age: "18+",
+                type: "TV Series",
+                rating: 8.4,
+                votes: "549K",
+                watched: false,
+                userRating: null,
+                genres: ["Dram", "Bilim Kurgu", "Gizem"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/8MfgyFHf7XEboZJPZXCIDqqiz6e.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt0475784/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: "https://www.beinconnect.com.tr/dizi/westworld"
+                }
+            },
+            {
+                id: 4,
+                title: "House of the Dragon",
+                years: "2022–",
+                eps: 27,
+                age: "18+",
+                type: "TV Series",
+                rating: 8.3,
+                votes: "479K",
+                watched: false,
+                userRating: null,
+                genres: ["Aksiyon", "Macera", "Dram"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/oxmdHR5Ka28HAJuMmS2hk5K6QQY.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt11198330/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: "https://www.beinconnect.com.tr/dizi/house-of-the-dragon"
+                }
+            },
+            {
+                id: 5,
+                title: "The Bear",
+                years: "2022–",
+                eps: 38,
+                age: "TV-MA",
+                type: "TV Series",
+                rating: 8.5,
+                votes: "273K",
+                watched: false,
+                userRating: null,
+                genres: ["Komedi", "Dram"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/eKfVzzEazSIjJMrw9ADa2x8ksLz.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt14452776/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: "https://www.disneyplus.cgom/tr-tr/series/the-bear/1u9QhNfK8mCj",
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 6,
+                title: "The Crown",
+                years: "2016–2023",
+                eps: 60,
+                age: "18+",
+                type: "TV Series",
+                rating: 8.6,
+                votes: "271K",
+                watched: false,
+                userRating: null,
+                genres: ["Biyografi", "Dram", "Tarihi"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/1DDE0Z2Y805rqfkEjPbZsMLyPwa.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt4786824/",
+                    netflix: "https://www.netflix.com/title/80025678",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 7,
+                title: "Succession",
+                years: "2018–2023",
+                eps: 39,
+                age: "16+",
+                type: "TV Series",
+                rating: 8.8,
+                votes: "320K",
+                watched: false,
+                userRating: null,
+                genres: ["Dram"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/z0XiwdrCQ9yVIr4O0pxzaAYRxdW.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt7660850/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: "https://www.beinconnect.com.tr/dizi/succession"
+                }
+            },
+            {
+                id: 8,
+                title: "Kardeşler Takımı",
+                years: "2001",
+                eps: 10,
+                age: "TV-MA",
+                type: "TV Mini Series",
+                rating: 9.4,
+                votes: "565K",
+                watched: false,
+                userRating: null,
+                genres: ["Dram", "Savaş", "Aksiyon"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/pGzV187ogXzgJrvPRy2YPi29ofH.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt0185906/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 9,
+                title: "Sıkı Dostlar",
+                years: "1994–2004",
+                eps: 235,
+                age: "7+",
+                type: "TV Series",
+                rating: 8.9,
+                votes: "1.1M",
+                watched: false,
+                userRating: null,
+                genres: ["Komedi", "Romantik"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/yAVOqZVmYXUqrLg4EiUU88HltYH.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt0108778/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 10,
+                title: "The Walking Dead",
+                years: "2010–2022",
+                eps: 177,
+                age: "18+",
+                type: "TV Series",
+                rating: 8.1,
+                votes: "1.1M",
+                watched: false,
+                userRating: null,
+                genres: ["Dram", "Korku", "Gerilim"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/s3OIDrCErUjthsnPPreY7XktQXB.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt1520211/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: "https://www.disneyplus.com/tr-tr/series/the-walking-dead/1vP4M4M3P09E",
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 11,
+                title: "Severance",
+                years: "2022–",
+                eps: 20,
+                age: "16+",
+                type: "TV Series",
+                rating: 8.7,
+                votes: "324K",
+                watched: false,
+                userRating: null,
+                genres: ["Dram", "Gizem", "Bilim Kurgu"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/pPHpeI2X1qEd1CS1SeyrdhZ4qnT.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt11280740/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 12,
+                title: "The Last of Us",
+                years: "2023–",
+                eps: 17,
+                age: "18+",
+                type: "TV Series",
+                rating: 8.6,
+                votes: "676K",
+                watched: false,
+                userRating: null,
+                genres: ["Aksiyon", "Macera", "Dram"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/cdbDsn2hqLL7x804GixzPP8AiBE.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt13401564/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: "https://www.beinconnect.com.tr/dizi/the-last-of-us"
+                }
+            },
+            {
+                id: 13,
+                title: "Çernobil",
+                years: "2019",
+                eps: 5,
+                age: "18+",
+                type: "TV Mini Series",
+                rating: 9.3,
+                votes: "956K",
+                watched: false,
+                userRating: null,
+                genres: ["Dram", "Tarihi", "Gerilim"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/AmJLuHjxPdIJO6vmymeWADG6jK5.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt7366338/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: "https://www.beinconnect.com.tr/dizi/chernobyl"
+                }
+            },
+            {
+                id: 14,
+                title: "Better Call Saul",
+                years: "2015–2022",
+                eps: 63,
+                age: "18+",
+                type: "TV Series",
+                rating: 9.0,
+                votes: "738K",
+                watched: false,
+                userRating: null,
+                genres: ["Suç", "Dram", "Gerilim"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/zjg4jpK1Wp2kiRvtt5ND0kznako.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt3032476/",
+                    netflix: "https://www.netflix.com/title/80021955",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 15,
+                title: "The Sopranos",
+                years: "1999–2007",
+                eps: 86,
+                age: "18+",
+                type: "TV Series",
+                rating: 9.2,
+                votes: "529K",
+                watched: false,
+                userRating: null,
+                genres: ["Suç", "Dram"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/rTc7ZXdroqjkKivFPvCPX0Ru7uw.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt0141842/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 16,
+                title: "Sherlock",
+                years: "2010–2017",
+                eps: 15,
+                age: "13+",
+                type: "TV Series",
+                rating: 9.0,
+                votes: "1.1M",
+                watched: false,
+                userRating: null,
+                genres: ["Suç", "Dram", "Gizem"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/cIfGAkpvWD2zxHrXzhv3uptYbyV.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt1475582/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: "https://www.blutv.com/diziler/yabanci/sherlock",
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 17,
+                title: "The Boys",
+                years: "2019–",
+                eps: 40,
+                age: "18+",
+                type: "TV Series",
+                rating: 8.6,
+                votes: "783K",
+                watched: false,
+                userRating: null,
+                genres: ["Aksiyon", "Komedi", "Suç"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/2zmTngn1tYC1AvfnrFLhxeD82hz.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt1190634/",
+                    netflix: null,
+                    primevideo: "https://www.primevideo.com/detail/The-Boys/0KRFNWNLQ0V5860L6J6Y2C5G2T",
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 18,
+                title: "Peaky Blinders",
+                years: "2013–2022",
+                eps: 36,
+                age: "18+",
+                type: "TV Series",
+                rating: 8.7,
+                votes: "716K",
+                watched: false,
+                userRating: null,
+                genres: ["Suç", "Dram"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/i0uajcHH9yogXMfDHpOXexIukG9.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt2442560/",
+                    netflix: "https://www.netflix.com/title/80002479",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 19,
+                title: "Rick ve Morty",
+                years: "2013–",
+                eps: 85,
+                age: "18+",
+                type: "TV Series",
+                rating: 9.1,
+                votes: "655K",
+                watched: false,
+                userRating: null,
+                genres: ["Animasyon", "Macera", "Komedi"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/WGRQ8FpjkDTzivQJ43t94bOuY0.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt2861424/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: "https://www.blutv.com/diziler/yabanci/rick-and-morty",
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 20,
+                title: "Arcane",
+                years: "2021–2024",
+                eps: 18,
+                age: "16+",
+                type: "TV Series",
+                rating: 9.0,
+                votes: "399K",
+                watched: false,
+                userRating: null,
+                genres: ["Animasyon", "Aksiyon", "Macera"],
+                poster: "https://www.themoviedb.org/t/p/w600_and_h900_bestv2/fqldf2t8ztc9aiwn3k6mlX3tvRT.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt11126994/",
+                    netflix: "https://www.netflix.com/title/81039645",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 21,
+                title: "Loki",
+                years: "2021–2023",
+                eps: 12,
+                age: "13+",
+                type: "TV Series",
+                rating: 8.2,
+                votes: "447K",
+                watched: false,
+                userRating: null,
+                genres: ["Aksiyon", "Macera", "Fantastik"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/oJdVHUYrjdS2IqiNztVIP4GPB1p.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt9140559/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: "https://www.disneyplus.com/tr-tr/series/loki/3oKqK6B9E8mY",
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 22,
+                title: "The Mandalorian",
+                years: "2019–",
+                eps: 25,
+                age: "13+",
+                type: "TV Series",
+                rating: 8.6,
+                votes: "629K",
+                watched: false,
+                userRating: null,
+                genres: ["Aksiyon", "Macera", "Fantastik"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/iLg3DzrwCDsHNovNaWx5JnQAsiV.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt8111088/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: "https://www.disneyplus.com/tr-tr/series/the-mandalorian/2S6gGjP8wN8d",
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 23,
+                title: "Atlanta",
+                years: "2016–2022",
+                eps: 41,
+                age: "15+",
+                type: "TV Series",
+                rating: 8.6,
+                votes: "95K",
+                watched: false,
+                userRating: null,
+                genres: ["Komedi", "Dram"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/pEj6EyG0RiLup2lWVnhmBYya5AA.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt4288182/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: "https://www.disneyplus.com/tr-tr/series/atlanta/1Ww0Wj9t0p0v",
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 24,
+                title: "Stranger Things",
+                years: "2016–2025",
+                eps: 42,
+                age: "16+",
+                type: "TV Series",
+                rating: 8.6,
+                votes: "1.5M",
+                watched: false,
+                userRating: null,
+                genres: ["Dram", "Fantastik", "Korku"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/g3nzhHBDTrJ7RWhzozFTYFjvRbd.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt4574334/",
+                    netflix: "https://www.netflix.com/title/80057281",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 25,
+                title: "The Witcher",
+                years: "2019–",
+                eps: 26,
+                age: "18+",
+                type: "TV Series",
+                rating: 7.9,
+                votes: "597K",
+                watched: false,
+                userRating: null,
+                genres: ["Aksiyon", "Macera", "Fantastik"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/5xSf5u1jDji7xUVNJ8CWhjO76ug.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt5180504/",
+                    netflix: "https://www.netflix.com/title/80189685",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 26,
+                title: "The Leftovers",
+                years: "2014–2017",
+                eps: 28,
+                age: "TV-MA",
+                type: "TV Series",
+                rating: 8.3,
+                votes: "122K",
+                watched: false,
+                userRating: null,
+                genres: ["Dram", "Gizem", "Fantastik"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/9IgLF8QCPfQ1fXnL7kfwgMBdJny.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt2699128/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: "https://www.beinconnect.com.tr/dizi/the-leftovers"
+                }
+            },
+            {
+                id: 27,
+                title: "Invincible",
+                years: "2021–",
+                eps: 25,
+                age: "18+",
+                type: "TV Series",
+                rating: 8.7,
+                votes: "279K",
+                watched: false,
+                userRating: null,
+                genres: ["Animasyon", "Aksiyon", "Macera"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/w9XQ7ehwaxqV6WJSAUE0qLTQHgq.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt6741278/",
+                    netflix: null,
+                    primevideo: "https://www.primevideo.com/detail/Invincible/0P4B9L72G007A25J51R0F7002C",
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 28,
+                title: "Barışçı",
+                years: "2022–",
+                eps: 16,
+                age: "18+",
+                type: "TV Series",
+                rating: 8.3,
+                votes: "150K",
+                watched: false,
+                userRating: null,
+                genres: ["Aksiyon", "Komedi", "Bilim Kurgu"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/hc3p6pvIrfO4AmrVLb6qTviOwW2.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt13429386/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 29,
+                title: "Love, Death & Robots",
+                years: "2019–",
+                eps: 45,
+                age: "18+",
+                type: "TV Series",
+                rating: 8.4,
+                votes: "219K",
+                watched: false,
+                userRating: null,
+                genres: ["Animasyon", "Kısa", "Aksiyon", "Bilim Kurgu"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/yukmN2nkaqUcZ5Un6aprkC9Vh7P.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt9561862/",
+                    netflix: "https://www.netflix.com/title/80174608",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 30,
+                title: "How I Met Your Mother",
+                years: "2005–2014",
+                eps: 208,
+                age: "16+",
+                type: "TV Series",
+                rating: 8.3,
+                votes: "761K",
+                watched: false,
+                userRating: null,
+                genres: ["Komedi", "Romantik"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/b34jPzmB0wZy7EjUZoleXOl2RRI.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt0460649/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 31,
+                title: "Korkusuz",
+                years: "2015–2018",
+                eps: 39,
+                age: "18+",
+                type: "TV Series",
+                rating: 8.6,
+                votes: "508K",
+                watched: false,
+                userRating: null,
+                genres: ["Aksiyon", "Suç", "Dram"],
+                poster: "https://static.wikia.nocookie.net/netflix/images/9/94/Marvels_Daredevil_-_Season_1_-_Key_Art_02.jpg/revision/latest/scale-to-width-down/1000?cb=20200502155408",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt3322312/",
+                    netflix: "https://www.netflix.com/title/80018029",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 32,
+                title: "Vikingler",
+                years: "2013–2020",
+                eps: 93,
+                age: "18+",
+                type: "TV Series",
+                rating: 8.5,
+                votes: "619K",
+                watched: false,
+                userRating: null,
+                genres: ["Aksiyon", "Macera", "Dram"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/qkCh6cFSHikSIFTWUQyJ2qJzqsy.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt2306299/",
+                    netflix: "https://www.netflix.com/title/70275815",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 33,
+                title: "True Detective",
+                years: "2014–",
+                eps: 31,
+                age: "TV-MA",
+                type: "TV Series",
+                rating: 8.9,
+                votes: "707K",
+                watched: false,
+                userRating: null,
+                genres: ["Suç", "Dram", "Gizem"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/mV16EBXQ6kDWpj31P6BEhmzTTkd.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt2356777/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: "https://www.beinconnect.com.tr/dizi/true-detective"
+                }
+            },
+            {
+                id: 34,
+                title: "Euphoria",
+                years: "2019–",
+                eps: 26,
+                age: "18+",
+                type: "TV Series",
+                rating: 8.3,
+                votes: "274K",
+                watched: false,
+                userRating: null,
+                genres: ["Dram", "Gençlik"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/3Q0hd3heuWwDWpwcDkhQOA6TYWI.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt8722432/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: "https://www.beinconnect.com.tr/dizi/euphoria"
+                }
+            },
+            {
+                id: 35,
+                title: "Monsters",
+                years: "2022–",
+                eps: 20,
+                age: "18+",
+                type: "TV Series",
+                rating: 7.8,
+                votes: "193K",
+                watched: false,
+                userRating: null,
+                genres: ["Korku", "Gizem", "Gerilim"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/fnBz19xGCKc7mfEo9NOeRWIe4iX.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt14234506/",
+                    netflix: "https://www.netflix.com/title/81464402",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 36,
+                title: "WandaVision",
+                years: "2021",
+                eps: 9,
+                age: "13+",
+                type: "TV Mini Series",
+                rating: 7.9,
+                votes: "398K",
+                watched: false,
+                userRating: null,
+                genres: ["Komedi", "Dram", "Fantastik"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/glKDfE6btIRcVB5zrjspRIs4r52.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt9140560/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: "https://www.disneyplus.com/tr-tr/series/wandavision/1Xj3E6tYj9eN",
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 37,
+                title: "Obi-Wan Kenobi",
+                years: "2022",
+                eps: 6,
+                age: "13+",
+                type: "TV Mini Series",
+                rating: 7.0,
+                votes: "250K",
+                watched: false,
+                userRating: null,
+                genres: ["Aksiyon", "Macera", "Bilim Kurgu"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/qJRB789ceLryrLvOKrZqLKr2CGf.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt13444458/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: "https://www.disneyplus.com/tr-tr/series/obi-wan-kenobi/6T4vGk70gR6P",
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 38,
+                title: "You",
+                years: "2018–2025",
+                eps: 50,
+                age: "18+",
+                type: "TV Series",
+                rating: 7.6,
+                votes: "342K",
+                watched: false,
+                userRating: null,
+                genres: ["Suç", "Dram", "Romantik"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/oANi0vEE92nuijiZQgPZ88FSxqQ.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt7322224/",
+                    netflix: "https://www.netflix.com/title/80211991",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 39,
+                title: "Mare of Easttown",
+                years: "2021",
+                eps: 7,
+                age: "TV-MA",
+                type: "TV Mini Series",
+                rating: 8.4,
+                votes: "206K",
+                watched: false,
+                userRating: null,
+                genres: ["Suç", "Dram", "Gizem"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/78aK4Msbr22A5PGa6PZV0pAvdwf.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt10155688/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: "https://www.beinconnect.com.tr/dizi/mare-of-easttown"
+                }
+            },
+            {
+                id: 40,
+                title: "The Book of Boba Fett",
+                years: "2021–2022",
+                eps: 7,
+                age: "13+",
+                type: "TV Mini Series",
+                rating: 7.1,
+                votes: "201K",
+                watched: false,
+                userRating: null,
+                genres: ["Aksiyon", "Macera", "Bilim Kurgu"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/gNbdjDi1HamTCrfvM9JeA94bNi2.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt13668894/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: "https://www.disneyplus.com/tr-tr/series/the-book-of-boba-fett/2j3p6w7q90",
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 41,
+                title: "Black Mirror",
+                years: "2011–",
+                eps: 33,
+                age: "18+",
+                type: "TV Series",
+                rating: 8.7,
+                votes: "699K",
+                watched: false,
+                userRating: null,
+                genres: ["Dram", "Bilim Kurgu", "Gerilim"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/7PRddO7z7mcPi21nZTCMGShAyy1.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt2085059/",
+                    netflix: "https://www.netflix.com/title/70264888",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 42,
+                title: "The Queen's Gambit",
+                years: "2020",
+                eps: 7,
+                age: "16+",
+                type: "TV Mini Series",
+                rating: 8.5,
+                votes: "622K",
+                watched: false,
+                userRating: null,
+                genres: ["Dram"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/6XFnup9IOl2DBLkFph5CjLfHgCu.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt10048342/",
+                    netflix: "https://www.netflix.com/title/80234406",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 43,
+                title: "Hannibal",
+                years: "2013–2015",
+                eps: 39,
+                age: "TV-MA",
+                type: "TV Series",
+                rating: 8.5,
+                votes: "294K",
+                watched: false,
+                userRating: null,
+                genres: ["Suç", "Dram", "Korku"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/pbV2eLnKSIm1epSZt473UYfqaeZ.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt2243973/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 44,
+                title: "Mindhunter",
+                years: "2017–2019",
+                eps: 19,
+                age: "16+",
+                type: "TV Series",
+                rating: 8.6,
+                votes: "370K",
+                watched: false,
+                userRating: null,
+                genres: ["Suç", "Dram", "Gerilim"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/fbKE87mojpIETWepSbD5Qt741fp.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt5290382/",
+                    netflix: "https://www.netflix.com/title/80119159",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 45,
+                title: "Jack Ryan",
+                years: "2018–2023",
+                eps: 30,
+                age: "16+",
+                type: "TV Series",
+                rating: 8.0,
+                votes: "186K",
+                watched: false,
+                userRating: null,
+                genres: ["Aksiyon", "Dram", "Gerilim"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/wmBaaU4PYIWHJ3kYEZv3ZIBbXuX.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt5057054/",
+                    netflix: null,
+                    primevideo: "https://www.primevideo.com/detail/Jack-Ryan/0K436H6Q00R3C6R3C102C45S1X",
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 46,
+                title: "The Night Of",
+                years: "2016",
+                eps: 8,
+                age: "15+",
+                type: "TV Mini Series",
+                rating: 8.4,
+                votes: "184K",
+                watched: false,
+                userRating: null,
+                genres: ["Suç", "Dram", "Gizem"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/q13XJHdnsmxQL9rXRcnNDrZGHjO.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt2401256/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: "https://www.beinconnect.com.tr/dizi/the-night-of"
+                }
+            },
+            {
+                id: 47,
+                title: "22.11.63",
+                years: "2016",
+                eps: 8,
+                age: "TV-MA",
+                type: "TV Mini Series",
+                rating: 8.1,
+                votes: "110K",
+                watched: false,
+                userRating: null,
+                genres: ["Dram", "Gizem", "Bilim Kurgu"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/1fH41ccMKvgDTbbcCxWWH6fznah.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt2879552/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 48,
+                title: "Büyük Kaçış",
+                years: "2005–2017",
+                eps: 90,
+                age: "16+",
+                type: "TV Series",
+                rating: 8.3,
+                votes: "631K",
+                watched: false,
+                userRating: null,
+                genres: ["Aksiyon", "Suç", "Dram"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/5E1BhkCgjLBlqx557Z5yzcN0i88.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt0455275/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: "https://www.disneyplus.com/tr-tr/series/prison-break/2Qz1K14D4122",
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 49,
+                title: "Sense8",
+                years: "2015–2018",
+                eps: 24,
+                age: "18+",
+                type: "TV Series",
+                rating: 8.2,
+                votes: "168K",
+                watched: false,
+                userRating: null,
+                genres: ["Dram", "Gizem", "Bilim Kurgu"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/kmyvlQ9QKzgdZY31rXaUlgCnzrB.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt2431438/",
+                    netflix: "https://www.netflix.com/title/80025744",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 50,
+                title: "Falcon ve Kış Askeri",
+                years: "2021",
+                eps: 6,
+                age: "13+",
+                type: "TV Mini Series",
+                rating: 7.1,
+                votes: "269K",
+                watched: false,
+                userRating: null,
+                genres: ["Aksiyon", "Macera", "Dram"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/lRk6NxH6BTnEKdRdxkyPaoxGb3i.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt9208876/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: "https://www.disneyplus.com/tr-tr/series/the-falcon-and-the-winter-soldier/2J3Q4K5N6M7L",
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 51,
+                title: "Downton Abbey",
+                years: "2010–2015",
+                eps: 52,
+                age: "18+",
+                type: "TV Series",
+                rating: 8.7,
+                votes: "236K",
+                watched: false,
+                userRating: null,
+                genres: ["Dram", "Romantik"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/r5n4CLoIjUcnT3shWDi6MHdJ25a.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt1606375/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 52,
+                title: "Modern Love",
+                years: "2019–2021",
+                eps: 16,
+                age: "16+",
+                type: "TV Series",
+                rating: 7.9,
+                votes: "39K",
+                watched: false,
+                userRating: null,
+                genres: ["Komedi", "Romantik"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/gENo7bQZHuOzzEA5VnuAebMgPpy.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt8242136/",
+                    netflix: null,
+                    primevideo: "https://www.primevideo.com/detail/Modern-Love/0J4D4D6B9K2L1J5J0Q1R0S3W7X",
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 53,
+                title: "Yüzüklerin Efendisi: Güç Yüzükleri",
+                years: "2022–",
+                eps: 17,
+                age: "13+",
+                type: "TV Series",
+                rating: 6.9,
+                votes: "426K",
+                watched: false,
+                userRating: null,
+                genres: ["Aksiyon", "Macera", "Dram"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/8YXqUPhOCQGSzdtAtFUpmxoSCGy.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt7631058/",
+                    netflix: null,
+                    primevideo: "https://www.primevideo.com/detail/The-Lord-of-the-Rings-The-Rings-of-Power/0GN9D9K7C042P719T13X5F002C",
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 54,
+                title: "1899",
+                years: "2022",
+                eps: 8,
+                age: "18+",
+                type: "TV Series",
+                rating: 7.3,
+                votes: "117K",
+                watched: false,
+                userRating: null,
+                genres: ["Dram", "Gizem", "Korku"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/qmpUDEgZawIlDU5HP3IJ9HjnpI3.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt11379188/",
+                    netflix: "https://www.netflix.com/title/80214488",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 55,
+                title: "Gangs of London",
+                years: "2020–",
+                eps: 25,
+                age: "18+",
+                type: "TV Series",
+                rating: 8.0,
+                votes: "49K",
+                watched: false,
+                userRating: null,
+                genres: ["Aksiyon", "Suç", "Dram"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/tcs6El8ZI1s9CUSHJcrGP6b01F9.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt6437118/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: "https://www.blutv.com/diziler/yabanci/gangs-of-london",
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 56,
+                title: "Hawkeye",
+                years: "2021",
+                eps: 6,
+                age: "13+",
+                type: "TV Mini Series",
+                rating: 7.4,
+                votes: "232K",
+                watched: false,
+                userRating: null,
+                genres: ["Aksiyon", "Macera", "Suç"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/ct5pNE5dDHryHLDnxyZPYcqO1sz.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt10986410/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: "https://www.disneyplus.com/tr-tr/series/hawkeye/3P0Z0W0W0W0W",
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 57,
+                title: "Moon Knight",
+                years: "2022",
+                eps: 6,
+                age: "13+",
+                type: "TV Mini Series",
+                rating: 7.3,
+                votes: "294K",
+                watched: false,
+                userRating: null,
+                genres: ["Aksiyon", "Macera", "Dram"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/vKDUmKO6F9bSKKyHhg7YGbgcEeF.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt10234724/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: "https://www.disneyplus.com/tr-tr/series/moon-knight/3R0X0X0X0X0X",
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 58,
+                title: "Son Krallık",
+                years: "2015–2022",
+                eps: 46,
+                age: "18+",
+                type: "TV Series",
+                rating: 8.5,
+                votes: "179K",
+                watched: false,
+                userRating: null,
+                genres: ["Aksiyon", "Dram", "Tarihi"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/8eJf0hxgIhE6QSxbtuNCekTddy1.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt4179452/",
+                    netflix: "https://www.netflix.com/title/80074249",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 59,
+                title: "Dark",
+                years: "2017–2020",
+                eps: 26,
+                age: "18+",
+                type: "TV Series",
+                rating: 8.7,
+                votes: "495K",
+                watched: false,
+                userRating: null,
+                genres: ["Suç", "Dram", "Gizem", "Bilim Kurgu"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/apbrbWs8M9lyOpJYU5WXrpFbk1Z.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt5753856/",
+                    netflix: "https://www.netflix.com/title/80100172",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 60,
+                title: "Ozark",
+                years: "2017–2022",
+                eps: 44,
+                age: "18+",
+                type: "TV Series",
+                rating: 8.5,
+                votes: "372K",
+                watched: false,
+                userRating: null,
+                genres: ["Suç", "Dram", "Gerilim"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/pCGyPVrI9Fzw6rE1Pvi4BIXF6ET.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt5071412/",
+                    netflix: "https://www.netflix.com/title/80117552",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 61,
+                title: "Sayın Yargıç",
+                years: "2020–2023",
+                eps: 20,
+                age: "13+",
+                type: "TV Series",
+                rating: 7.6,
+                votes: "77K",
+                watched: false,
+                userRating: null,
+                genres: ["Suç", "Dram", "Gerilim"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/tYymHE2eIo4DDIMa5Byiz8NsMUy.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt10857316/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 62,
+                title: "Shameless",
+                years: "2011–2021",
+                eps: 134,
+                age: "TV-MA",
+                type: "TV Series",
+                rating: 8.5,
+                votes: "313K",
+                watched: false,
+                userRating: null,
+                genres: ["Komedi", "Dram"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/9akij7PqZ1g6zl42DQQTtL9CTSb.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt1586680/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: "https://www.beinconnect.com.tr/dizi/shameless"
+                }
+            },
+            {
+                id: 63,
+                title: "La casa de papel",
+                years: "2017–2021",
+                eps: 41,
+                age: "16+",
+                type: "TV Series",
+                rating: 8.2,
+                votes: "574K",
+                watched: false,
+                userRating: null,
+                genres: ["Aksiyon", "Suç", "Dram"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/qPrXr0b0gvdJpxGqLNKS17N6rF.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt6468322/",
+                    netflix: "https://www.netflix.com/title/80192098",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 64,
+                title: "Halo",
+                years: "2022–2024",
+                eps: 17,
+                age: "7+",
+                type: "TV Series",
+                rating: 7.3,
+                votes: "105K",
+                watched: false,
+                userRating: null,
+                genres: ["Aksiyon", "Macera", "Bilim Kurgu"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/4UmNhZCEu8Vt3byMvNxNEPyf8EY.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt2934286/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 65,
+                title: "Bodyguard",
+                years: "2018",
+                eps: 6,
+                age: "16+",
+                type: "TV Series",
+                rating: 8.0,
+                votes: "162K",
+                watched: false,
+                userRating: null,
+                genres: ["Dram", "Gerilim"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/5DUJTrHTRLHLCKWriPhdusQogAv.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt7485098/",
+                    netflix: "https://www.netflix.com/title/80214488",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 66,
+                title: "Smiling Friends",
+                years: "2020–",
+                eps: 20,
+                age: "TV-MA",
+                type: "TV Series",
+                rating: 8.5,
+                votes: "22K",
+                watched: false,
+                userRating: null,
+                genres: ["Animasyon", "Komedi"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/l1Qdw9DsJaomE8BXeVfkF6h1qaa.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt11855662/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 67,
+                title: "The Mosquito Coast",
+                years: "2021–2023",
+                eps: 17,
+                age: "TV-MA",
+                type: "TV Series",
+                rating: 6.8,
+                votes: "16K",
+                watched: false,
+                userRating: null,
+                genres: ["Macera", "Dram", "Gerilim"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/xMQU5aGjxsqxKQNhSfY2G8Y6jRg.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt10875440/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 68,
+                title: "After Life",
+                years: "2019–2022",
+                eps: 18,
+                age: "18+",
+                type: "TV Series",
+                rating: 8.4,
+                votes: "162K",
+                watched: false,
+                userRating: null,
+                genres: ["Komedi", "Dram"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/bIz4BpeOpavOXQ3Vu2Xg7QLBdt7.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt8398600/",
+                    netflix: "https://www.netflix.com/title/80998341",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 69,
+                title: "When They See Us",
+                years: "2019",
+                eps: 4,
+                age: "18+",
+                type: "TV Mini Series",
+                rating: 8.8,
+                votes: "149K",
+                watched: false,
+                userRating: null,
+                genres: ["Biyografi", "Suç", "Dram"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/oPv3nNtkuc6EPEql5lgdOuQNHuG.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt7139900/",
+                    netflix: "https://www.netflix.com/title/80200501",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 70,
+                title: "The Walking Dead: Daryl Dixon",
+                years: "2023–",
+                eps: 14,
+                age: "TV-MA",
+                type: "TV Series",
+                rating: 7.5,
+                votes: "33K",
+                watched: false,
+                userRating: null,
+                genres: ["Dram", "Korku", "Bilim Kurgu"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/t5FVNwDq0oQ1PvVd6EA9hrY3YFV.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt18216336/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 71,
+                title: "Broadchurch",
+                years: "2013–2017",
+                eps: 24,
+                age: "TV-MA",
+                type: "TV Series",
+                rating: 8.3,
+                votes: "135K",
+                watched: false,
+                userRating: null,
+                genres: ["Suç", "Dram", "Gizem"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/2NhBFUTg5KVBmGwafxtLwVdsqrr.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt2249364/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 72,
+                title: "Narcos",
+                years: "2015–2017",
+                eps: 30,
+                age: "18+",
+                type: "TV Series",
+                rating: 8.7,
+                votes: "503K",
+                watched: false,
+                userRating: null,
+                genres: ["Biyografi", "Suç", "Dram"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/rTmal9fDbwh5F0waol2hq35U4ah.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt2707408/",
+                    netflix: "https://www.netflix.com/title/80025172",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 73,
+                title: "Normal İnsanlar",
+                years: "2020",
+                eps: 12,
+                age: "TV-14",
+                type: "TV Mini Series",
+                rating: 8.4,
+                votes: "106K",
+                watched: false,
+                userRating: null,
+                genres: ["Dram", "Romantik"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/c4mk4EQVIM11yd3W43DDdqDazDU.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt10838180/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: "https://www.beinconnect.com.tr/dizi/normal-people"
+                }
+            },
+            {
+                id: 74,
+                title: "Love & Death",
+                years: "2023",
+                eps: 7,
+                age: "TV-MA",
+                type: "TV Mini Series",
+                rating: 7.5,
+                votes: "44K",
+                watched: false,
+                userRating: null,
+                genres: ["Suç", "Dram", "Gizem"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/8WchbT0UPQeo3PZ6G01fhccYaQB.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt12776364/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 75,
+                title: "Fear the Walking Dead",
+                years: "2015–2023",
+                eps: 113,
+                age: "16+",
+                type: "TV Series",
+                rating: 6.8,
+                votes: "151K",
+                watched: false,
+                userRating: null,
+                genres: ["Dram", "Korku", "Bilim Kurgu"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/l7N9aS6VyYvjelKoCB2eZge0Qky.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt3743822/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: "https://www.disneyplus.com/tr-tr/series/fear-the-walking-dead/1vP4M4M3P09F",
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 76,
+                title: "Maid",
+                years: "2021",
+                eps: 10,
+                age: "18+",
+                type: "TV Mini Series",
+                rating: 8.3,
+                votes: "113K",
+                watched: false,
+                userRating: null,
+                genres: ["Dram"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/4brWcSXdH31BZUTtRTHj2BYFe6M.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt11888248/",
+                    netflix: "https://www.netflix.com/title/81031343",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 77,
+                title: "Sex Education",
+                years: "2019–2023",
+                eps: 32,
+                age: "18+",
+                type: "TV Series",
+                rating: 8.2,
+                votes: "381K",
+                watched: false,
+                userRating: null,
+                genres: ["Komedi", "Dram", "Gençlik"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/vDPxd8umSGkkhCO7eA1yML1zT1o.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt7767422/",
+                    netflix: "https://www.netflix.com/title/80178356",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 78,
+                title: "Space Force",
+                years: "2020–2022",
+                eps: 17,
+                age: "16+",
+                type: "TV Series",
+                rating: 6.7,
+                votes: "74K",
+                watched: false,
+                userRating: null,
+                genres: ["Komedi"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/zgu3p4NvisS8CI68cUfBKbvAvu8.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt10972410/",
+                    netflix: "https://www.netflix.com/title/81022874",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 79,
+                title: "I Am Not Okay with This",
+                years: "2020",
+                eps: 7,
+                age: "16+",
+                type: "TV Series",
+                rating: 7.5,
+                votes: "79K",
+                watched: false,
+                userRating: null,
+                genres: ["Komedi", "Dram", "Fantastik"],
+                poster: "https://images.justwatch.com/poster/168104097/s166/i-am-not-okay-with-this.avif",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt9446688/",
+                    netflix: "https://www.netflix.com/title/80233405",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 80,
+                title: "Ötekiler",
+                years: "2021–",
+                eps: 18,
+                age: "18+",
+                type: "TV Series",
+                rating: 7.5,
+                votes: "32K",
+                watched: false,
+                userRating: null,
+                genres: ["Dram", "Gizem", "Korku"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/vTWAPeycpXqOfzugC29kAUU4H2s.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt10080648/",
+                    netflix: null,
+                    primevideo: "https://www.primevideo.com/detail/The-Them/0G6L3Q4R5S6T7U8V9W0X",
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 81,
+                title: "Secret Invasion",
+                years: "2023",
+                eps: 6,
+                age: "13+",
+                type: "TV Mini Series",
+                rating: 5.8,
+                votes: "85K",
+                watched: false,
+                userRating: null,
+                genres: ["Aksiyon", "Dram", "Gizem"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/f5ZMzzCvt2IzVDxr54gHPv9jlC9.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt13149540/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: "https://www.disneyplus.com/tr-tr/series/secret-invasion/4K5L6M7N8O9P",
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 82,
+                title: "The Glory",
+                years: "2022–2023",
+                eps: 16,
+                age: "18+",
+                type: "TV Series",
+                rating: 8.2,
+                votes: "38K",
+                watched: false,
+                userRating: null,
+                genres: ["Dram", "Gerilim"],
+                poster: "hhttps://image.tmdb.org/t/p/w600_and_h900_bestv2/uUM4LVlPgIrww07OoEKrGWlS1Ej.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt21066779/",
+                    netflix: "https://www.netflix.com/title/81519223",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 83,
+                title: "The Walking Dead: Dead City",
+                years: "2023–",
+                eps: 14,
+                age: "TV-MA",
+                type: "TV Series",
+                rating: 7.1,
+                votes: "30K",
+                watched: false,
+                userRating: null,
+                genres: ["Aksiyon", "Korku", "Bilim Kurgu"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/wq3vuQzQgbS83zX3malAFWMsSwX.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt18442802/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 84,
+                title: "Dogs of Berlin",
+                years: "2018–",
+                eps: 11,
+                age: "18+",
+                type: "TV Series",
+                rating: 7.5,
+                votes: "15K",
+                watched: false,
+                userRating: null,
+                genres: ["Suç", "Dram", "Gerilim"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/wOeA0fPtZfNfljUUMFdgl8Lt9La.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt6567540/",
+                    netflix: "https://www.netflix.com/title/80175782",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 85,
+                title: "Élite",
+                years: "2018–2024",
+                eps: 64,
+                age: "18+",
+                type: "TV Series",
+                rating: 7.1,
+                votes: "97K",
+                watched: false,
+                userRating: null,
+                genres: ["Suç", "Dram", "Gerilim"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/54EfTQlhyaExBdPgCNJm47IJb0v.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt7134378/",
+                    netflix: "https://www.netflix.com/title/80194498",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 86,
+                title: "Anne with an E",
+                years: "2017–2019",
+                eps: 27,
+                age: "7+",
+                type: "TV Series",
+                rating: 8.6,
+                votes: "75K",
+                watched: false,
+                userRating: null,
+                genres: ["Dram", "Aile"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/6P6tXhjT5tK3qOXzxF9OMLlG7iz.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt5474776/",
+                    netflix: "https://www.netflix.com/title/80103761",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 87,
+                title: "Inventing Anna",
+                years: "2022",
+                eps: 9,
+                age: "18+",
+                type: "TV Mini Series",
+                rating: 6.9,
+                votes: "87K",
+                watched: false,
+                userRating: null,
+                genres: ["Biyografi", "Dram"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/aZraQSnS9Dbvipv4WLJQ5xrhG3g.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt11267440/",
+                    netflix: "https://www.netflix.com/title/81002324",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 88,
+                title: "Silo",
+                years: "2023–",
+                eps: 22,
+                age: "18+",
+                type: "TV Series",
+                rating: 8.1,
+                votes: "188K",
+                watched: false,
+                userRating: null,
+                genres: ["Dram", "Gizem", "Bilim Kurgu"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/c2OijvbFEXBW1onbzuvENr4CGQB.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt13418888/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 89,
+                title: "Collateral",
+                years: "2018",
+                eps: 4,
+                age: "18+",
+                type: "TV Mini Series",
+                rating: 6.8,
+                votes: "23K",
+                watched: false,
+                userRating: null,
+                genres: ["Suç", "Dram", "Gizem"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/3ekqFDb0IbY7pJbL772TEs2GifX.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt6876170/",
+                    netflix: "https://www.netflix.com/title/80187425",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 90,
+                title: "The Walking Dead: World Beyond",
+                years: "2020–2021",
+                eps: 20,
+                age: "16+",
+                type: "TV Series",
+                rating: 4.6,
+                votes: "19K",
+                watched: false,
+                userRating: null,
+                genres: ["Dram", "Korku", "Bilim Kurgu"],
+                poster: "hhttps://image.tmdb.org/t/p/w600_and_h900_bestv2/6HanIV2hTLE2w7A5bI1KJb3bTL7.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt10870956/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 91,
+                title: "She-Hulk: Attorney at Law",
+                years: "2022",
+                eps: 9,
+                age: "13+",
+                type: "TV Mini Series",
+                rating: 5.2,
+                votes: "202K",
+                watched: false,
+                userRating: null,
+                genres: ["Aksiyon", "Komedi", "Fantastik"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/yhFN7yvskzm1Tsknkg46eQbQr9w.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt10857322/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: "https://www.disneyplus.com/tr-tr/series/she-hulk-attorney-at-law/6M0X0X0X0X0X",
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 92,
+                title: "Into the Night",
+                years: "2020–2021",
+                eps: 12,
+                age: "16+",
+                type: "TV Series",
+                rating: 7.0,
+                votes: "38K",
+                watched: false,
+                userRating: null,
+                genres: ["Dram", "Gizem", "Bilim Kurgu"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/na6fk6WculNrUPCPPQSPNjNyjvX.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt10972410/",
+                    netflix: "https://www.netflix.com/title/81090123",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 93,
+                title: "The Society",
+                years: "2019",
+                eps: 10,
+                age: "18+",
+                type: "TV Series",
+                rating: 7.1,
+                votes: "40K",
+                watched: false,
+                userRating: null,
+                genres: ["Dram", "Gizem", "Bilim Kurgu"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/mxOlnFEQMpxjIltr9Ox06iyjjvK.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt8662994/",
+                    netflix: "https://www.netflix.com/title/80218760",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 94,
+                title: "The Haunting: Tepedeki Ev",
+                years: "2018",
+                eps: 10,
+                age: "18+",
+                type: "TV Mini Series",
+                rating: 8.5,
+                votes: "311K",
+                watched: false,
+                userRating: null,
+                genres: ["Dram", "Korku", "Gizem"],
+                poster: "hhttps://image.tmdb.org/t/p/w600_and_h900_bestv2/j39gJwCNy06YjFgQVRgXpzWYv60.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt6763662/",
+                    netflix: "https://www.netflix.com/title/80189221",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 95,
+                title: "How to Sell Drugs Online",
+                years: "2019–2025",
+                eps: 24,
+                age: "18+",
+                type: "TV Series",
+                rating: 7.8,
+                votes: "44K",
+                watched: false,
+                userRating: null,
+                genres: ["Komedi", "Suç", "Dram"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/xg7U76h1DNtwa0eBOIbFdiM80DR.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt9140559/", // IMDb linki kontrol edildi
+                    netflix: "https://www.netflix.com/title/80228514",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 96,
+                title: "Wayward Pines",
+                years: "2015–2016",
+                eps: 20,
+                age: "TV-14",
+                type: "TV Series",
+                rating: 7.3,
+                votes: "63K",
+                watched: false,
+                userRating: null,
+                genres: ["Dram", "Gizem", "Gerilim"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/mK9MowBCPEn7RbsDXqN0MxyPc4.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt2603502/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 97,
+                title: "Titans",
+                years: "2018–2023",
+                eps: 49,
+                age: "18+",
+                type: "TV Series",
+                rating: 7.5,
+                votes: "117K",
+                watched: false,
+                userRating: null,
+                genres: ["Aksiyon", "Macera", "Dram"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/xKnUNWFsAOaKIviIYBLei02Bauu.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt6643506/",
+                    netflix: null,
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 98,
+                title: "13 Reasons Why",
+                years: "2017–2020",
+                eps: 49,
+                age: "18+",
+                type: "TV Series",
+                rating: 7.4,
+                votes: "330K",
+                watched: false,
+                userRating: null,
+                genres: ["Dram", "Gizem"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/edtwCUiQPLMVEnyO9VGek50HXbm.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt5920786/",
+                    netflix: "https://www.netflix.com/title/80117470",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 99,
+                title: "Kalamar Oyunu",
+                years: "2021–2025",
+                eps: 18,
+                age: "18+",
+                type: "TV Series",
+                rating: 8.0,
+                votes: "668K",
+                watched: false,
+                userRating: null,
+                genres: ["Aksiyon", "Dram", "Gizem"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/1QdXdRYfktUSONkl1oD5gc6Be0s.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt10919420/",
+                    netflix: "https://www.netflix.com/title/81040344",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            },
+            {
+                id: 100,
+                title: "Dracula",
+                years: "2020",
+                eps: 3,
+                age: "18+",
+                type: "TV Mini Series",
+                rating: 6.9,
+                votes: "55K",
+                watched: false,
+                userRating: null,
+                genres: ["Dram", "Korku", "Gerilim"],
+                poster: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/oQUU8LKVl10ejpxJC0qfsSuPZeF.jpg",
+                platformLink: {
+                    imdb: "https://www.imdb.com/title/tt9140559/", // IMDb linki kontrol edildi
+                    netflix: "https://www.netflix.com/title/80997184",
+                    primevideo: null,
+                    disneyplus: null,
+                    blutv: null,
+                    gain: null,
+                    beinconnect: null
+                }
+            }
+        ];
+
+        const movieData = movies.map(movie => ({
+            ...movie,
+            watched: false, // Varsayılan olarak hepsi izlenmedi
+            userRating: null // Varsayılan olarak hepsi puanlanmadı
+        }));
+
+        const movieListElement = document.getElementById('movie-list');
+        const categoryFilter = document.getElementById('category-filter');
+        const randomSuggestBtn = document.getElementById('random-suggest-btn');
+        const suggestionModal = document.getElementById('suggestionModal');
+        const closeButton = document.querySelector('.close-button');
+        const modalPoster = document.getElementById('modal-poster');
+        const modalTitle = document.getElementById('modal-title');
+        const modalGenres = document.getElementById('modal-genres');
+        const modalDescription = document.getElementById('modal-description');
+        const modalImdbLink = document.getElementById('modal-imdb-link');
+
+        // Theme buttons
+        const lightThemeBtn = document.getElementById('light-theme-btn');
+        const darkThemeBtn = document.getElementById('dark-theme-btn');
+
+        const platformMapping = {
+            netflix: { name: "Netflix'te İzle", id: "modal-netflix-link" },
+            primevideo: { name: "Prime Video'da İzle", id: "modal-prime-link" },
+            disneyplus: { name: "Disney+'ta İzle", id: "modal-disney-link" },
+            blutv: { name: "BluTV'de İzle", id: "modal-blutv-link" },
+            gain: { name: "Gain'de İzle", id: "modal-gain-link" },
+            beinconnect: { name: "beIN CONNECT'te İzle", id: "modal-bein-link" }
+        };
+
+        function renderMovies(filteredMovies) {
+            movieListElement.innerHTML = '';
+            filteredMovies.forEach(movie => {
+                const movieCard = document.createElement('div');
+                movieCard.classList.add('movie-card');
+
+                movieCard.innerHTML = `
+                    <img src="${movie.poster}" alt="${movie.title} Afişi">
+                    <div class="movie-info">
+                        <h3>${movie.title}</h3>
+                        <p>${movie.years} | ${movie.eps} bölüm | ${movie.age}</p>
+                        <p><strong>Tür:</strong> ${movie.genres.join(', ')}</p>
+                        <p>${movie.type}</p>
+                        <div class="rating-watched">
+                            <span class="rating">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                IMDb: ${movie.rating} (${movie.votes})
+                            </span>
+                            <span class="watched-status ${movie.watched ? 'watched' : 'not-watched'}">
+                                ${movie.watched ? 'İzlendi' : 'İzlenmedi'}
+                            </span>
+                        </div>
+                        <div class="movie-actions">
+                            <button class="watched-toggle-btn ${movie.watched ? 'watched-btn' : 'not-watched-btn'}" data-id="${movie.id}">
+                                ${movie.watched ? 'İzlenmedi Olarak İşaretle' : 'İzlendi Olarak İşaretle'}
+                            </button>
+                            <button class="rate-btn" data-id="${movie.id}">Puan Ver ${movie.userRating !== null ? `(${movie.userRating}/10)` : ''}</button>
+                            <a href="${movie.platformLink.imdb}" target="_blank">IMDb</a>
+                            ${Object.keys(movie.platformLink).map(platformKey => {
+                                const link = movie.platformLink[platformKey];
+                                const platformInfo = platformMapping[platformKey];
+                                return (link && platformInfo) ? `<a href="${link}" target="_blank">${platformInfo.name.split('\'')[0]}</a>` : '';
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+                movieListElement.appendChild(movieCard);
+            });
+
+            addEventListenersToButtons();
+        }
+
+        function addEventListenersToButtons() {
+            document.querySelectorAll('.watched-toggle-btn').forEach(button => {
+                button.onclick = (e) => {
+                    const movieId = parseInt(e.target.dataset.id);
+                    const movie = movieData.find(m => m.id === movieId);
+                    if (movie) {
+                        movie.watched = !movie.watched;
+                        renderMovies(filterMovies());
+                        saveMovieData();
+                    }
+                };
+            });
+
+            document.querySelectorAll('.rate-btn').forEach(button => {
+                button.onclick = (e) => {
+                    const movieId = parseInt(e.target.dataset.id);
+                    const movie = movieData.find(m => m.id === movieId);
+                    if (movie) {
+                        let currentRatingText = movie.userRating !== null ? `(Şu anki puanınız: ${movie.userRating}/10)` : '';
+                        let newRating = prompt(`"${movie.title}" için 1-10 arası bir puan girin: ${currentRatingText}`);
+                        if (newRating === null) return; // Kullanıcı iptal'e basarsa işlemi durdur
+                        
+                        if (newRating.trim() === '' || isNaN(newRating)) {
+                             movie.userRating = null;
+                        } else {
+                            newRating = parseInt(newRating);
+                            if (newRating >= 1 && newRating <= 10) {
+                                movie.userRating = newRating;
+                            } else {
+                                alert("Lütfen 1-10 arası geçerli bir sayı girin.");
+                            }
+                        }
+                        renderMovies(filterMovies());
+                        saveMovieData();
+                    }
+                };
+            });
+        }
+
+        function filterMovies() {
+            const selectedCategory = categoryFilter.value;
+            let filtered = movieData;
+
+            if (selectedCategory !== 'all') {
+                filtered = filtered.filter(movie => movie.genres.includes(selectedCategory));
+            }
+            return filtered;
+        }
+
+        categoryFilter.addEventListener('change', () => {
+            renderMovies(filterMovies());
+        });
+
+        randomSuggestBtn.addEventListener('click', () => {
+            const unwatchedMovies = movieData.filter(movie => !movie.watched);
+            if (unwatchedMovies.length > 0) {
+                const randomIndex = Math.floor(Math.random() * unwatchedMovies.length);
+                const suggestedMovie = unwatchedMovies[randomIndex];
+
+                modalPoster.src = suggestedMovie.poster;
+                modalTitle.textContent = suggestedMovie.title;
+                modalGenres.textContent = `Tür: ${suggestedMovie.genres.join(', ')} | IMDb: ${suggestedMovie.rating}`;
+                modalDescription.textContent = `Bu dizi, ${suggestedMovie.years} yılları arasında yayınlanmış, ${suggestedMovie.eps} bölümlük bir ${suggestedMovie.type}dir.`;
+
+                // Platform linklerini güncelle (YENİ EKLENEN KISIM)
+                modalImdbLink.href = suggestedMovie.platformLink.imdb;
+
+                // Önce tüm platform linklerini gizle
+                document.querySelectorAll('.modal-actions .platform-link').forEach(link => {
+                    link.style.display = 'none';
+                });
+                
+                // Sonra sadece mevcut olanları göster
+                Object.keys(platformMapping).forEach(platformKey => {
+                    const linkElement = document.getElementById(platformMapping[platformKey].id);
+                    if (suggestedMovie.platformLink[platformKey]) {
+                        linkElement.href = suggestedMovie.platformLink[platformKey];
+                        linkElement.style.display = 'inline-block'; // veya 'flex'
+                    }
+                });
+
+
+                suggestionModal.style.display = 'flex';
+            } else {
+                alert("Tebrikler! Tüm dizileri izlemişsiniz. Yeni diziler keşfetmeye devam edin veya izlediğiniz dizileri tekrardan puanlayın.");
+            }
+        });
+
+        closeButton.addEventListener('click', () => {
+            suggestionModal.style.display = 'none';
+        });
+
+        window.addEventListener('click', (event) => {
+            if (event.target == suggestionModal) {
+                suggestionModal.style.display = 'none';
+            }
+        });
+
+        function saveMovieData() {
+            const dataToSave = movieData.map(m => ({ id: m.id, watched: m.watched, userRating: m.userRating }));
+            localStorage.setItem('movieAppData', JSON.stringify(dataToSave));
+        }
+
+        function loadMovieData() {
+            const savedData = localStorage.getItem('movieAppData');
+            if (savedData) {
+                const parsedData = JSON.parse(savedData);
+                // Merge loaded data with original structure
+                movieData.forEach(movie => {
+                    const savedMovie = parsedData.find(m => m.id === movie.id);
+                    if (savedMovie) {
+                        movie.watched = savedMovie.watched;
+                        movie.userRating = savedMovie.userRating;
+                    }
+                });
+            }
+        }
+
+
+        // Theme switching logic
+        function setTheme(themeName) {
+            document.body.className = ''; // Remove existing theme classes
+            if (themeName === 'dark-theme') {
+                document.body.classList.add('dark-theme');
+            }
+            localStorage.setItem('theme', themeName); // Save theme preference
+        }
+
+        lightThemeBtn.addEventListener('click', () => setTheme('light-theme'));
+        darkThemeBtn.addEventListener('click', () => setTheme('dark-theme'));
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadMovieData(); // Attempt to load saved data
+            const savedTheme = localStorage.getItem('theme') || 'light-theme';
+            setTheme(savedTheme);
+            renderMovies(filterMovies());
+        });
+
+    </script>
+</body>
+</html>
